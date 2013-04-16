@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
+import com.wifiplayer.bean.packages.Head;
+import com.wifiplayer.utils.ReadDirectoryFile;
+
 
 /**
  * 接收线程
@@ -29,19 +32,37 @@ public class ReceiveThread implements Runnable {
 	}
 
 	private void receive() {
-		int len;
 		while(isReceive){
 			try {
 				InputStream is = s.getInputStream();
-				byte[] buff = new byte[1024];
-				while ((len = is.read(buff)) != -1) {
-					System.out.println("服务器接收的内容：" + new String(buff));
-					new SendThread(s, "我收到了你发来的信息".getBytes()).start();
+				
+				while (true) {
+					byte[] headArray = new byte[12];
+					int len = is.read(headArray);
+					if (len == 12) {
+						Head head = Head.resolveHead(headArray);
+						switch (head.getCmd()) {
+						case Head.CONN_SERVER://客户端连接服务器
+							connServer();
+							break;
+
+						default:
+							break;
+						}
+					}
 				}
 			} catch (IOException e) {
 				
 			}
 		}
+		
+	}
+
+	/**
+	 * 客户端连接服务器
+	 */
+	private void connServer() {
+		ReadDirectoryFile.systemRoots().toString();
 		
 	}
 
