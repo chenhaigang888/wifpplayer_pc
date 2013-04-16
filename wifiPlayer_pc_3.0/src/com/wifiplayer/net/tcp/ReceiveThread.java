@@ -32,7 +32,7 @@ public class ReceiveThread implements Runnable {
 	}
 
 	private void receive() {
-		while(isReceive){
+		while(isReceive){ 
 			try {
 				InputStream is = s.getInputStream();
 				
