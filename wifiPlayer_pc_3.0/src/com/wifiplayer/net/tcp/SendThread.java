@@ -41,7 +41,20 @@ public class SendThread extends Thread {
 			os.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.err.println("发送数据的时候出错了");
+			close(os, socket);
 		}
+	}
+
+	private void close(OutputStream os, Socket socket) {
+		try {
+			os.close();
+			socket.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 	}
 
 }
