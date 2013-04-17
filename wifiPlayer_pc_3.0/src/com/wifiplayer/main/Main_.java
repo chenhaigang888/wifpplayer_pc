@@ -8,7 +8,7 @@ import com.wifiplayer.net.udp.UdpServer;
 /**
  * 软件启动类
  * @author chenkaigang
- *
+ * 
  */
 public class Main_ {
 

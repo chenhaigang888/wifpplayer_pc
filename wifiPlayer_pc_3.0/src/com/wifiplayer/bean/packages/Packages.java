@@ -5,7 +5,7 @@ package com.wifiplayer.bean.packages;
  * @author Administrator
  *
  */
-public class Package {
+public class Packages {
 
 	private Head head;//包头
 	private Body body;//包体
@@ -23,7 +23,7 @@ public class Package {
 		this.body = body;
 	}
 	
-	public Package(Head head, Body body) {
+	public Packages(Head head, Body body) {
 		super();
 		this.head = head;
 		this.body = body;

@@ -13,31 +13,18 @@ public class PcFile {
 	private boolean dir;//当前文件是否为文件夹
 	private String size;//文件大小
 	private Date createDate;//文件创建日期
+	private boolean isSys;//是否为系统
 	
 	
-	
-	public PcFile(String name, String path, boolean dir, String size,
-			Date createDate) {
-		super();
-		this.name = name;
-		this.path = path;
-		this.dir = dir;
-		this.size = size;
-		this.createDate = createDate;
-	}
-	
-	
-	
-	public PcFile() {
-		super();
+
+	public boolean isSys() {
+		return isSys;
 	}
 
 
 
-	@Override
-	public String toString() {
-		return "PcFile [name=" + name + ", path=" + path + ", dir=" + dir
-				+ ", size=" + size + ", createDate=" + createDate + "]";
+	public void setSys(boolean isSys) {
+		this.isSys = isSys;
 	}
 
 

@@ -20,6 +20,8 @@ public class ReadDirectoryFile {
 	@SuppressWarnings("unused")
 	public static JSONArray listFile(String path){
 		List<PcFile> list = new ArrayList<PcFile>();
+		List<PcFile> dirs = new ArrayList<PcFile>();
+		List<PcFile> files = new ArrayList<PcFile>();
 		File[] fs = null;
 		System.err.println("查看目录:"+path);
 		File file = new File(path);
@@ -32,18 +34,35 @@ public class ReadDirectoryFile {
 			}else{
 				for(File f:fs){
 					PcFile pf = new PcFile();
-					if(f.isDirectory()){//设置是否为文件夹
-						pf.setDir(true);
-					}else{
-						pf.setDir(false);
-					}
 					pf.setName(f.getName());
 					pf.setPath(f.getAbsolutePath());
-					pf.setSize((f.length() /1024)+ "KB");
-					list.add(pf);
+					
+					pf.setSys(false);
+					if(f.isDirectory()){//设置是否为文件夹
+						pf.setSize("");
+						pf.setDir(true);
+						dirs.add(pf);
+					}else{
+						pf.setSize((f.length() /1024)+ "KB");
+						pf.setDir(false);
+						files.add(pf);
+					}
+					
+					
 				}
 			}
 		}
+		PcFile pf = new PcFile();
+		pf.setName("\\上一页...");
+		list.add(pf);
+		/*将文件排序*/
+		for(int i=0; i<dirs.size(); i++){
+			list.add(dirs.get(i));
+		}
+		for(int i=0; i<files.size(); i++){
+			list.add(files.get(i));
+		}
+		
 		JSONArray jsonArray = JSONArray.fromObject(list);
 		
 		
@@ -60,8 +79,9 @@ public class ReadDirectoryFile {
 		File[] roots = File.listRoots();
 		for (int i=0; i<roots.length; i++) {
 			pf = new PcFile();
-			pf.setName(roots[i].getName());
+			pf.setName(roots[i].toString());
 			pf.setSize(((roots[i].getTotalSpace() / 1024) / 1024) / 1024 + "GB");
+			pf.setSys(true);
 			list.add(pf);
 		}
 		JSONArray jsonArray = JSONArray.fromObject(list);
