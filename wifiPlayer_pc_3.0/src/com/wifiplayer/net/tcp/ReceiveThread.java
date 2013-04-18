@@ -1,8 +1,11 @@
 package com.wifiplayer.net.tcp;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.Socket;
 
 import com.wifiplayer.bean.packages.Head;
@@ -21,6 +24,7 @@ public class ReceiveThread implements Runnable {
 
 	Socket s;
 	public boolean isReceive = true;
+	private RandomAccessFile raf;
 
 	public ReceiveThread(Socket s) {
 		super();
@@ -62,10 +66,58 @@ public class ReceiveThread implements Runnable {
 			case Head.OPEN_FILE:
 				openFile(new String(bodyArray));
 				break;
+			case Head.COPY_FILE_2_PHONE:
+				copyFile2Phone(bodyArray);
+				break;
 			default:
 				break;
 			}
 
+		}
+		
+	}
+
+	/**
+	 * 拷贝文件到手机
+	 * @param head
+	 */
+	private void copyFile2Phone(byte[] bodyArray) {
+		try {
+		File uploadFile = new File(new String(bodyArray));//需要上传的文件
+		long upLoadFileLenth = uploadFile.length();//需要上传的长度
+		
+		byte[] connServerArray = (upLoadFileLenth + "").getBytes();
+		Head head = new Head(Head.COPY_FILE_2_PHONE_REPLY, connServerArray.length, 0, 0);
+		ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
+		Packages p = new Packages(head, csrb);
+//		new SendThread(s, p.getPackage()).start();
+		OutputStream os = s.getOutputStream();
+		os.write(p.getPackage());
+		os.flush();
+		
+		
+		
+		
+		long alreadyUpload = 0;//已经上传的长度
+		int len = 0; //当前读取的长度
+		raf = new RandomAccessFile(uploadFile, "r");
+		raf.seek(0);//设置从文件的什么位子开始读取
+			
+			byte[] buffer = new byte[1024];
+			while ((len = raf.read(buffer, 0, 1024)) != -1) {
+				alreadyUpload += len;
+				os = s.getOutputStream();
+				os.write(buffer, 0, len);
+				os.flush();
+				System.out.println("已经上传的长度:"+ alreadyUpload);
+			}
+			raf.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 	}
@@ -95,23 +147,35 @@ public class ReceiveThread implements Runnable {
 	 * 播放视频(音乐)文件
 	 * @param path
 	 */
-	private void openFile(String path) {
-		String filePath = path;
-		filePath = filePath.replace("/", "\\");
-		String hzm = filePath.substring(filePath.lastIndexOf(".")+1, filePath.length()).toLowerCase();//得到文件的后缀名
+	private void openFile(final String path) {
+		final String hzm = path.substring(path.lastIndexOf(".")+1, path.length()).toLowerCase();//得到文件的后缀名
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				boolean playResult = false;
+				try {
+					if(hzm.equals("mp3")||hzm.equals("wma")||hzm.equals("wav")||hzm.equals("ape")||hzm.equals("flac")||hzm.equals("aac")||hzm.equals("cue")){
+						playResult = OpenFile.playMusic(path, 0);
+					}else{
+						playResult = OpenFile.playMovie(path, 0);
+					}
+				} catch (Exception e) {
+					System.out.println("打开文件失败");
+				} finally {
+					byte[] connServerArray = (playResult + "").getBytes();
+					Head head = new Head(Head.OPEN_FILE_REPLY, connServerArray.length, 0, 0);
+					ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
+					Packages p = new Packages(head, csrb);
+					new SendThread(s, p.getPackage()).start();
+				}
+				
+			}
+		}).start();
 		
-		boolean playResult = false;
-		if(hzm.equals("mp3")||hzm.equals("wma")||hzm.equals("wav")||hzm.equals("ape")||hzm.equals("flac")||hzm.equals("aac")||hzm.equals("cue")){
-			playResult = OpenFile.playMusic(filePath, 0);
-		}else{
-			playResult = OpenFile.playMovie(filePath, 0);
-		}
 		
-		byte[] connServerArray = (playResult + "").getBytes();
-		Head head = new Head(Head.OPEN_FILE_REPLY, connServerArray.length, 0, 0);
-		ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
-		Packages p = new Packages(head, csrb);
-		new SendThread(s, p.getPackage()).start();
+		
+		
 	}
 	
 	

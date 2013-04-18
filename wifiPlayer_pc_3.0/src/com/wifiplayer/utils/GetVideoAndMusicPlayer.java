@@ -21,7 +21,12 @@ public class GetVideoAndMusicPlayer {
 //	}
 	
 	static{
-		getDisplayNames();
+		try {
+			getDisplayNames();
+		} catch (Exception e) {
+			
+		}
+		
 	}
 	
 	/**
