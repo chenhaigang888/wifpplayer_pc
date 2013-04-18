@@ -1,8 +1,9 @@
 package com.wifiplayer.utils;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
 
 import com.wifiplayer.bean.PcFile;
@@ -36,7 +37,7 @@ public class ReadDirectoryFile {
 					PcFile pf = new PcFile();
 					pf.setName(f.getName());
 					pf.setPath(f.getAbsolutePath());
-					
+					pf.setCreateDate(getFileModifyTime(f));
 					pf.setSys(false);
 					if(f.isDirectory()){//设置是否为文件夹
 						pf.setSize("");
@@ -62,11 +63,20 @@ public class ReadDirectoryFile {
 		for(int i=0; i<files.size(); i++){
 			list.add(files.get(i));
 		}
-		
 		JSONArray jsonArray = JSONArray.fromObject(list);
 		
-		
 		return jsonArray;
+	}
+	
+	/**
+	 * 获取文件的最后修改时间
+	 * @param file
+	 * @return
+	 */
+	public static String getFileModifyTime(File file) {
+		 long time = file.lastModified();//返回文件最后修改时间，是以个long型毫秒数
+		 String ctime = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date(time));
+		return ctime;
 	}
 	
 	/**
@@ -80,7 +90,9 @@ public class ReadDirectoryFile {
 		for (int i=0; i<roots.length; i++) {
 			pf = new PcFile();
 			pf.setName(roots[i].toString());
-			pf.setSize(((roots[i].getTotalSpace() / 1024) / 1024) / 1024 + "GB");
+			String str = ((roots[i].getFreeSpace() / 1024) / 1024) / 1024 + "GB";
+			
+			pf.setSize(str + "可用，共" + ((roots[i].getTotalSpace() / 1024) / 1024) / 1024 + "GB");
 			pf.setSys(true);
 			list.add(pf);
 		}
@@ -90,22 +102,32 @@ public class ReadDirectoryFile {
 		
 	}
 	
-	public static void main(String[] args) {
-//		String str = listFile("/Volumes/音影/").toString();
-		String str = systemRoots().toString();
-		JSONArray jsonArr = JSONArray.fromObject(str);
-		
-		
-		for (int i=0; i<jsonArr.size(); i++) {
-			PcFile pf = (PcFile) JSONObject.toBean(jsonArr.getJSONObject(i), PcFile.class);
-			System.out.println("name:" + pf.getName() + " 文件大小：" + pf.getSize());
+	/**
+	 * 删除文件，包括文件夹
+	 * @param file
+	 * @return
+	 */
+	public static boolean delFile(File file){
+		System.err.println("删除文件");
+		if (!file.isDirectory()) {//如果不是文件夹
+			file.delete();
+			return true;
 		}
-		
-//		File[] roots = File.listRoots();
-//		for (int i=0; i<roots.length; i++) {
-//			System.out.println(roots[i]);
-//			System.out.println("总共大小:" + ((roots[i].getTotalSpace() / 1024) / 1024) / 1024 + "GB");
-//		}
+		File[] files = file.listFiles();
+		try {
+			for(int i=0; i<files.length; i++){
+				File f = files[i];
+				if(f.delete()){
+					System.out.println(f.getAbsolutePath());
+				}else{
+					delFile(f);
+				}
+			}
+			file.delete();
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return true;
 	}
 	
 }

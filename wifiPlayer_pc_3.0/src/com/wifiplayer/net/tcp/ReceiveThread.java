@@ -1,5 +1,6 @@
 package com.wifiplayer.net.tcp;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
@@ -7,6 +8,7 @@ import java.net.Socket;
 import com.wifiplayer.bean.packages.Head;
 import com.wifiplayer.bean.packages.Packages;
 import com.wifiplayer.bean.packages.send.ConnServerReplyBody;
+import com.wifiplayer.utils.OpenFile;
 import com.wifiplayer.utils.ReadDirectoryFile;
 
 /**
@@ -52,7 +54,13 @@ public class ReceiveThread implements Runnable {
 				connServer();
 				break;
 			case Head.OPEN_DIR:
-				openDir(new String(bodyArray));
+				openDir(new String(bodyArray), Head.OPEN_DIR_REPLY);
+				break;
+			case Head.DEL_FILE:
+				delFile(new String(bodyArray));
+				break;
+			case Head.OPEN_FILE:
+				openFile(new String(bodyArray));
 				break;
 			default:
 				break;
@@ -61,6 +69,52 @@ public class ReceiveThread implements Runnable {
 		}
 		
 	}
+
+	/**
+	 * 删除文件
+	 * @param string 文件路径
+	 */
+	private void delFile(String path) {
+		File file = new File(path);
+		boolean delResult = ReadDirectoryFile.delFile(file);
+		if (delResult) {
+			path = path.substring(0, path.lastIndexOf("\\"));
+			openDir(path, Head.DEL_FILE_REPLY);
+			return;
+		}
+		byte[] connServerArray = (delResult + "").getBytes();
+		System.out.println("删除结果：" + new String(connServerArray));
+		Head head = new Head(Head.DEL_FILE_REPLY, connServerArray.length, 0, 0);
+		ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
+		Packages p = new Packages(head, csrb);
+		new SendThread(s, p.getPackage()).start();
+	}
+
+	
+	/**
+	 * 播放视频(音乐)文件
+	 * @param path
+	 */
+	private void openFile(String path) {
+		String filePath = path;
+		filePath = filePath.replace("/", "\\");
+		String hzm = filePath.substring(filePath.lastIndexOf(".")+1, filePath.length()).toLowerCase();//得到文件的后缀名
+		
+		boolean playResult = false;
+		if(hzm.equals("mp3")||hzm.equals("wma")||hzm.equals("wav")||hzm.equals("ape")||hzm.equals("flac")||hzm.equals("aac")||hzm.equals("cue")){
+			playResult = OpenFile.playMusic(filePath, 0);
+		}else{
+			playResult = OpenFile.playMovie(filePath, 0);
+		}
+		
+		byte[] connServerArray = (playResult + "").getBytes();
+		Head head = new Head(Head.OPEN_FILE_REPLY, connServerArray.length, 0, 0);
+		ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
+		Packages p = new Packages(head, csrb);
+		new SendThread(s, p.getPackage()).start();
+	}
+	
+	
 
 	/**
 	 * 读取数据
@@ -111,14 +165,12 @@ public class ReceiveThread implements Runnable {
 	/**
 	 * 获取文件夹
 	 */
-	private void openDir(String path) {
+	private void openDir(String path, short cmd) {
 		try {
 			String str = ReadDirectoryFile.listFile(path).toString();
 			System.out.println("str:" + str);
 			byte[] connServerArray = str.getBytes();
-			System.err.println("本次发送字符串的长度:" + connServerArray.length);
-			Head head = new Head(Head.OPEN_DIR_REPLY, connServerArray.length,
-					0, 0);
+			Head head = new Head(cmd, connServerArray.length, 0, 0);
 			ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
 			Packages p = new Packages(head, csrb);
 			new SendThread(s, p.getPackage()).start();
@@ -135,8 +187,7 @@ public class ReceiveThread implements Runnable {
 		String str = ReadDirectoryFile.systemRoots().toString();
 		System.out.println("根目录：" + str);
 		byte[] connServerArray = str.getBytes();
-		Head head = new Head(Head.CONN_SERVER_REPLY, connServerArray.length, 0,
-				0);
+		Head head = new Head(Head.CONN_SERVER_REPLY, connServerArray.length, 0, 0);
 		ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
 		Packages p = new Packages(head, csrb);
 		new SendThread(s, p.getPackage()).start();

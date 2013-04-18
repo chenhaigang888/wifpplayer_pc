@@ -12,7 +12,7 @@ public class PcFile {
 	private String path;//当前文件（目录）的路径
 	private boolean dir;//当前文件是否为文件夹
 	private String size;//文件大小
-	private Date createDate;//文件创建日期
+	private String createDate;//文件创建日期
 	private boolean isSys;//是否为系统
 	
 	
@@ -53,12 +53,19 @@ public class PcFile {
 	public void setSize(String size) {
 		this.size = size;
 	}
-	public Date getCreateDate() {
+
+
+
+	public String getCreateDate() {
 		return createDate;
 	}
-	public void setCreateDate(Date createDate) {
+
+
+
+	public void setCreateDate(String createDate) {
 		this.createDate = createDate;
 	}
+	
 	
 	
 }
