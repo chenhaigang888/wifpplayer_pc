@@ -81,44 +81,47 @@ public class ReceiveThread implements Runnable {
 	 * 拷贝文件到手机
 	 * @param head
 	 */
-	private void copyFile2Phone(byte[] bodyArray) {
-		try {
-		File uploadFile = new File(new String(bodyArray));//需要上传的文件
-		long upLoadFileLenth = uploadFile.length();//需要上传的长度
-		
-		byte[] connServerArray = (upLoadFileLenth + "").getBytes();
-		Head head = new Head(Head.COPY_FILE_2_PHONE_REPLY, connServerArray.length, 0, 0);
-		ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
-		Packages p = new Packages(head, csrb);
-//		new SendThread(s, p.getPackage()).start();
-		OutputStream os = s.getOutputStream();
-		os.write(p.getPackage());
-		os.flush();
-		
-		
-		
-		
-		long alreadyUpload = 0;//已经上传的长度
-		int len = 0; //当前读取的长度
-		raf = new RandomAccessFile(uploadFile, "r");
-		raf.seek(0);//设置从文件的什么位子开始读取
+	private void copyFile2Phone(final byte[] bodyArray) {
+		new Thread(new Runnable() {
 			
-			byte[] buffer = new byte[1024];
-			while ((len = raf.read(buffer, 0, 1024)) != -1) {
-				alreadyUpload += len;
-				os = s.getOutputStream();
-				os.write(buffer, 0, len);
-				os.flush();
-				System.out.println("已经上传的长度:"+ alreadyUpload);
+			@Override
+			public void run() {
+				try {
+					File uploadFile = new File(new String(bodyArray));//需要上传的文件
+					long upLoadFileLenth = uploadFile.length();//需要上传的长度
+					
+					byte[] connServerArray = (upLoadFileLenth + "").getBytes();
+					Head head = new Head(Head.COPY_FILE_2_PHONE_REPLY, connServerArray.length, 0, 0);
+					ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
+					Packages p = new Packages(head, csrb);
+					OutputStream os = s.getOutputStream();
+					os.write(p.getPackage());
+					os.flush();
+					
+					long alreadyUpload = 0;//已经上传的长度
+					int len = 0; //当前读取的长度
+					raf = new RandomAccessFile(uploadFile, "r");
+					raf.seek(0);//设置从文件的什么位子开始读取
+						
+						byte[] buffer = new byte[1024*1024*10];
+						while ((len = raf.read(buffer, 0, 1024)) != -1) {
+							alreadyUpload += len;
+							os = s.getOutputStream();
+							os.write(buffer, 0, len);
+							os.flush();
+//							System.out.println("已经上传的长度:"+ alreadyUpload);
+						}
+						raf.close();
+					} catch (FileNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 			}
-			raf.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		}).start();
+		
 		
 	}
 
@@ -129,17 +132,20 @@ public class ReceiveThread implements Runnable {
 	private void delFile(String path) {
 		File file = new File(path);
 		boolean delResult = ReadDirectoryFile.delFile(file);
+		System.out.println("删除成功?" + delResult);
 		if (delResult) {
 			path = path.substring(0, path.lastIndexOf("\\"));
-			openDir(path, Head.DEL_FILE_REPLY);
+			openDir(path, Head.OPEN_DIR_REPLY);
 			return;
+		} else {
+			byte[] connServerArray = (delResult + "").getBytes();
+			System.out.println("删除结果：" + new String(connServerArray));
+			Head head = new Head(Head.DEL_FILE_REPLY, connServerArray.length, 0, 0);
+			ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
+			Packages p = new Packages(head, csrb);
+			new SendThread(s, p.getPackage()).start();
 		}
-		byte[] connServerArray = (delResult + "").getBytes();
-		System.out.println("删除结果：" + new String(connServerArray));
-		Head head = new Head(Head.DEL_FILE_REPLY, connServerArray.length, 0, 0);
-		ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
-		Packages p = new Packages(head, csrb);
-		new SendThread(s, p.getPackage()).start();
+		
 	}
 
 	

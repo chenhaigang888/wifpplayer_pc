@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import com.wifiplayer.bean.PcFile;
@@ -20,6 +21,7 @@ public class ReadDirectoryFile {
 	 */
 	@SuppressWarnings("unused")
 	public static JSONArray listFile(String path){
+		ReadDirectoryFile rdf = new ReadDirectoryFile();
 		List<PcFile> list = new ArrayList<PcFile>();
 		List<PcFile> dirs = new ArrayList<PcFile>();
 		List<PcFile> files = new ArrayList<PcFile>();
@@ -44,7 +46,8 @@ public class ReadDirectoryFile {
 						pf.setDir(true);
 						dirs.add(pf);
 					}else{
-						pf.setSize((f.length() /1024)+ "KB");
+//						pf.setSize((f.length() /1024)+ "KB");
+						pf.setSize(new Tools().js(f.length()));
 						pf.setDir(false);
 						files.add(pf);
 					}
@@ -90,9 +93,8 @@ public class ReadDirectoryFile {
 		for (int i=0; i<roots.length; i++) {
 			pf = new PcFile();
 			pf.setName(roots[i].toString());
-			String str = ((roots[i].getFreeSpace() / 1024) / 1024) / 1024 + "GB";
-			
-			pf.setSize(str + "可用，共" + ((roots[i].getTotalSpace() / 1024) / 1024) / 1024 + "GB");
+			String str = (new Tools().js(roots[i].getFreeSpace()));
+			pf.setSize(str + "可用，共" + new Tools().js(roots[i].getTotalSpace()));
 			pf.setSys(true);
 			list.add(pf);
 		}
@@ -129,5 +131,16 @@ public class ReadDirectoryFile {
 		}
 		return true;
 	}
+	
+
+	
+//	public static void main(String[] args) {
+//		ReadDirectoryFile rdf = new ReadDirectoryFile();
+//		double str = 1024*1024*1024+2500;
+////		String fileD = rdf.js(d);
+//		
+//		
+//		System.out.println("len:" + fileD);
+//	}
 	
 }
