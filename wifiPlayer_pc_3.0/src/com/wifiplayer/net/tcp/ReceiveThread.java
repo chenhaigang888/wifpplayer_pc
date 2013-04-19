@@ -11,6 +11,7 @@ import java.net.Socket;
 import com.wifiplayer.bean.packages.Head;
 import com.wifiplayer.bean.packages.Packages;
 import com.wifiplayer.bean.packages.send.ConnServerReplyBody;
+import com.wifiplayer.main.Main_;
 import com.wifiplayer.utils.OpenFile;
 import com.wifiplayer.utils.ReadDirectoryFile;
 
@@ -134,7 +135,12 @@ public class ReceiveThread implements Runnable {
 		boolean delResult = ReadDirectoryFile.delFile(file);
 		System.out.println("删除成功?" + delResult);
 		if (delResult) {
-			path = path.substring(0, path.lastIndexOf("\\"));
+			if (Main_.osName.equals("Mac OS X")) {//如果是苹果系统
+				path = path.replace("\\", "/");
+			} else {
+				path = path.replace("/", "\\");
+			}
+			path = path.substring(0, path.lastIndexOf(Main_.separator));
 			openDir(path, Head.OPEN_DIR_REPLY);
 			return;
 		} else {

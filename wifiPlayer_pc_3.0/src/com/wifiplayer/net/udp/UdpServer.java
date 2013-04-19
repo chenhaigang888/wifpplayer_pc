@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+
+import com.wifiplayer.main.Main_;
 /**
  * UDP服务器 用户客户端寻找Server使用
  * @author Administrator
@@ -23,7 +25,7 @@ public class UdpServer extends Thread{
 		/*发送回复信息*/
 		int port = recevDp.getPort();//发送者的端口
 		InetAddress addr = recevDp.getAddress();//发送者的ip地址
-		String sendStr = "hello ! I'm Server";
+		String sendStr = Main_.osName + "&" + Main_.version + "&" + Main_.userName;
 		byte[] sendBuf = sendStr.getBytes();
 		DatagramPacket sendDp = new DatagramPacket(sendBuf, sendBuf.length, addr, port);
 		ds.send(sendDp);
