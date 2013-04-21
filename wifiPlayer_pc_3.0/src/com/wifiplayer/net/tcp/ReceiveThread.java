@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
 import com.wifiplayer.bean.packages.Head;
@@ -41,12 +42,18 @@ public class ReceiveThread implements Runnable {
 	private void receive() {
 		while (isReceive) {
 			System.out.println("isReceive:" + isReceive);
+			
 			byte[] headArray = new byte[14];
 			int len = readData(s, 0, headArray);
+			System.out.println("len:" + len);
 			if (len == -1) {
 				isReceive = false;
 				break;
 			}
+//			System.out.println("headArray--:" + new String(headArray));
+//			new SendThread(s, "你好啊哈哈哈哈".getBytes()).start();//ios测试使用的代码
+			
+			
 			Head head = Head.resolveHead(headArray);
 			byte[] bodyArray = new byte[head.getPackBodyLenth()];
 			len = readData(s, 0, bodyArray);
@@ -104,8 +111,8 @@ public class ReceiveThread implements Runnable {
 					raf = new RandomAccessFile(uploadFile, "r");
 					raf.seek(0);//设置从文件的什么位子开始读取
 						
-						byte[] buffer = new byte[1024*1024*10];
-						while ((len = raf.read(buffer, 0, 1024)) != -1) {
+						byte[] buffer = new byte[1024*1024];
+						while ((len = raf.read(buffer, 0, buffer.length)) != -1) {
 							alreadyUpload += len;
 							os = s.getOutputStream();
 							os.write(buffer, 0, len);
@@ -153,44 +160,53 @@ public class ReceiveThread implements Runnable {
 		}
 		
 	}
-
+	boolean playResult = false;
 	
 	/**
 	 * 播放视频(音乐)文件
 	 * @param path
 	 */
 	private void openFile(final String path) {
-		final String hzm = path.substring(path.lastIndexOf(".")+1, path.length()).toLowerCase();//得到文件的后缀名
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				boolean playResult = false;
-				try {
-					if(hzm.equals("mp3")||hzm.equals("wma")||hzm.equals("wav")||hzm.equals("ape")||hzm.equals("flac")||hzm.equals("aac")||hzm.equals("cue")){
-						playResult = OpenFile.playMusic(path, 0);
-					}else{
-						playResult = OpenFile.playMovie(path, 0);
-					}
-				} catch (Exception e) {
-					System.out.println("打开文件失败");
-				} finally {
-					byte[] connServerArray = (playResult + "").getBytes();
-					Head head = new Head(Head.OPEN_FILE_REPLY, connServerArray.length, 0, 0);
-					ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
-					Packages p = new Packages(head, csrb);
-					new SendThread(s, p.getPackage()).start();
-				}
+	
+		if (Main_.osName.equals("Mac OS X")) {
+			playResult = OpenFile.macPlayer(path);
+		} else {
+			final String hzm = path.substring(path.lastIndexOf(".")+1, path.length()).toLowerCase();//得到文件的后缀名
+			new Thread(new Runnable() {
 				
-			}
-		}).start();
-		
-		
-		
-		
+				@Override
+				public void run() {
+					
+					try {
+						if(hzm.equals("mp3")||hzm.equals("wma")||hzm.equals("wav")||hzm.equals("ape")||hzm.equals("flac")||hzm.equals("aac")||hzm.equals("cue")){
+							playResult = OpenFile.playMusic(path, 0);
+						}else{
+							playResult = OpenFile.playMovie(path, 0);
+						}
+					} catch (Exception e) {
+						System.out.println("打开文件失败");
+					} finally {
+						sendPlayResult();
+					}
+					
+				}
+			}).start();
+		}
+		sendPlayResult();
 	}
 	
 	
+	/**
+	 * 发送播放信息
+	 */
+	private void sendPlayResult() {
+		byte[] connServerArray = (playResult + "").getBytes();
+		Head head = new Head(Head.OPEN_FILE_REPLY, connServerArray.length, 0, 0);
+		ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
+		Packages p = new Packages(head, csrb);
+		new SendThread(s, p.getPackage()).start();
+		
+	}
 
 	/**
 	 * 读取数据

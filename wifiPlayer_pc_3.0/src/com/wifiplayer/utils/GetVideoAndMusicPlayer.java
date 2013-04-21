@@ -15,10 +15,6 @@ public class GetVideoAndMusicPlayer {
 	
 	private static HashMap<String, Object> map = new HashMap<String, Object>();
 	
-//	public GetVideoAndMusicPlayer() {
-//		super();
-//		getDisplayNames();
-//	}
 	
 	static{
 		try {
@@ -62,6 +58,8 @@ public class GetVideoAndMusicPlayer {
         List<HashMap<String,String>> MusicList = new ArrayList<HashMap<String, String>>();
         HashMap<String,String> MovSoftwarePathMap = null;
         HashMap<String,String> MusSoftwarePathMap = null;
+        
+        
         try{
         	RegistryKey rk = RegistryKey.LocalMachine.openSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall");//用于打开注册表目录。
         	namesList = rk.getSubKeyNames();//获取注册表中的所有子键名。

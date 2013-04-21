@@ -39,4 +39,17 @@ public class OpenFile {
 		}
 		return true;
 	}
+	
+	
+	public static boolean macPlayer(String path) {
+		Runtime rt = Runtime.getRuntime();
+		String command = "open -a /Applications/MPlayerX.app " + path;
+		try {
+			rt.exec(command);
+		} catch (IOException e) {
+			e.printStackTrace();
+			
+		}
+		return true;
+	}
 }
