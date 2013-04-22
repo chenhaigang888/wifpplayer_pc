@@ -13,22 +13,21 @@ public class PcFile {
 	private boolean dir;//当前文件是否为文件夹
 	private String size;//文件大小
 	private String createDate;//文件创建日期
-	private boolean isSys;//是否为系统
+	private boolean sys;//是否为系统
 	
 	
 
+	
+
+
+
+	
 	public boolean isSys() {
-		return isSys;
+		return sys;
 	}
-
-
-
-	public void setSys(boolean isSys) {
-		this.isSys = isSys;
+	public void setSys(boolean sys) {
+		this.sys = sys;
 	}
-
-
-
 	public String getName() {
 		return name;
 	}

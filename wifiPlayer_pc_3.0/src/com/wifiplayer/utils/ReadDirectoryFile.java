@@ -58,6 +58,7 @@ public class ReadDirectoryFile {
 		}
 		PcFile pf = new PcFile();
 		pf.setName("\\上一页...");
+		
 		list.add(pf);
 		/*将文件排序*/
 		for(int i=0; i<dirs.size(); i++){
