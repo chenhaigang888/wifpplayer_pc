@@ -55,6 +55,7 @@ public class ReceiveThread implements Runnable {
 			
 			
 			Head head = Head.resolveHead(headArray);
+			System.out.println("当前操作cmd:" + head.getCmd());
 			byte[] bodyArray = new byte[head.getPackBodyLenth()];
 			len = readData(s, 0, bodyArray);
 			if (len == -1) {
@@ -114,7 +115,7 @@ public class ReceiveThread implements Runnable {
 						byte[] buffer = new byte[1024*1024];
 						while ((len = raf.read(buffer, 0, buffer.length)) != -1) {
 							alreadyUpload += len;
-							os = s.getOutputStream();
+//							os = s.getOutputStream();
 							os.write(buffer, 0, len);
 							os.flush();
 //							System.out.println("已经上传的长度:"+ alreadyUpload);
