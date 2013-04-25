@@ -6,15 +6,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
+
+import com.wifiplayer.bean.Test;
 import com.wifiplayer.bean.packages.Head;
 import com.wifiplayer.bean.packages.Packages;
 import com.wifiplayer.bean.packages.send.ConnServerReplyBody;
 import com.wifiplayer.main.Main_;
 import com.wifiplayer.utils.OpenFile;
 import com.wifiplayer.utils.ReadDirectoryFile;
+
+
 
 /**
  * 接收线程
@@ -28,6 +32,7 @@ public class ReceiveThread implements Runnable {
 	public boolean isReceive = true;
 	private RandomAccessFile raf;
 
+
 	public ReceiveThread(Socket s) {
 		super();
 		this.s = s;
@@ -35,27 +40,28 @@ public class ReceiveThread implements Runnable {
 
 	@Override
 	public void run() {
+		
+		new SendThread(s, "I'm server, I receive your connect!".getBytes()).start();//ios测试使用的代码
 		receive();
 		System.out.println("监听结束");
 	}
 
 	private void receive() {
+		
 		while (isReceive) {
 			System.out.println("isReceive:" + isReceive);
 			
-			byte[] headArray = new byte[14];
+			byte[] headArray = new byte[16];
 			int len = readData(s, 0, headArray);
 			System.out.println("len:" + len);
 			if (len == -1) {
 				isReceive = false;
 				break;
 			}
-//			System.out.println("headArray--:" + new String(headArray));
-//			new SendThread(s, "你好啊哈哈哈哈".getBytes()).start();//ios测试使用的代码
-			
 			
 			Head head = Head.resolveHead(headArray);
 			System.out.println("当前操作cmd:" + head.getCmd());
+			System.out.println("bodyLenth:" + head.getPackBodyLenth());
 			byte[] bodyArray = new byte[head.getPackBodyLenth()];
 			len = readData(s, 0, bodyArray);
 			if (len == -1) {
