@@ -7,10 +7,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 
 
-import com.wifiplayer.bean.Test;
 import com.wifiplayer.bean.packages.Head;
 import com.wifiplayer.bean.packages.Packages;
 import com.wifiplayer.bean.packages.send.ConnServerReplyBody;
@@ -41,7 +39,7 @@ public class ReceiveThread implements Runnable {
 	@Override
 	public void run() {
 		
-		new SendThread(s, "I'm server, I receive your connect!".getBytes()).start();//ios测试使用的代码
+//		new SendThread(s, "I'm server, I receive your connect!".getBytes()).start();//ios测试使用的代码
 		receive();
 		System.out.println("监听结束");
 	}
@@ -57,6 +55,10 @@ public class ReceiveThread implements Runnable {
 			if (len == -1) {
 				isReceive = false;
 				break;
+			}
+			System.out.print("[");
+			for (int i=0; i<headArray.length; i++) {
+				System.out.print(headArray[i] + ",");
 			}
 			
 			Head head = Head.resolveHead(headArray);
@@ -264,7 +266,7 @@ public class ReceiveThread implements Runnable {
 	/**
 	 * 获取文件夹
 	 */
-	private void openDir(String path, short cmd) {
+	private void openDir(String path, int cmd) {
 		try {
 			String str = ReadDirectoryFile.listFile(path).toString();
 			System.out.println("str:" + str);

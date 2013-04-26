@@ -31,7 +31,7 @@ public class Main_ {
 		osName = properties.getProperty("os.name");
 		userName = properties.getProperty("user.name");
 		version = properties.getProperty("os.version");
-		String separator = properties.getProperty("file.separator");
+		separator = properties.getProperty("file.separator");
 		
 		System.out.println("os:" + osName);
 		System.out.println("userName:" + userName);
