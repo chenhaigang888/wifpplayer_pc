@@ -33,7 +33,7 @@ public class SendThread extends Thread {
 	 * @param packages
 	 */
 	private void send(byte[] sendData) {
-
+		System.out.println("sendData的长度:" + sendData.length);
 		OutputStream os = null;
 		try {
 			os = socket.getOutputStream();

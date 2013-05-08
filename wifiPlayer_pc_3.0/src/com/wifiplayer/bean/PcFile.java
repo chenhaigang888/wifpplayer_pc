@@ -10,24 +10,10 @@ public class PcFile {
 
 	private String name;//文件（目录）的名称
 	private String path;//当前文件（目录）的路径
-	private boolean dir;//当前文件是否为文件夹
+	private String dir;//当前文件是否为文件夹
 	private String size;//文件大小
 	private String createDate;//文件创建日期
-	private boolean sys;//是否为系统
-	
-	
-
-	
-
-
-
-	
-	public boolean isSys() {
-		return sys;
-	}
-	public void setSys(boolean sys) {
-		this.sys = sys;
-	}
+	private String sys;//是否为系统
 	public String getName() {
 		return name;
 	}
@@ -40,10 +26,10 @@ public class PcFile {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	public boolean isDir() {
+	public String getDir() {
 		return dir;
 	}
-	public void setDir(boolean dir) {
+	public void setDir(String dir) {
 		this.dir = dir;
 	}
 	public String getSize() {
@@ -52,18 +38,22 @@ public class PcFile {
 	public void setSize(String size) {
 		this.size = size;
 	}
-
-
-
 	public String getCreateDate() {
 		return createDate;
 	}
-
-
-
 	public void setCreateDate(String createDate) {
 		this.createDate = createDate;
 	}
+	public String getSys() {
+		return sys;
+	}
+	public void setSys(String sys) {
+		this.sys = sys;
+	}
+	
+	
+
+
 	
 	
 	

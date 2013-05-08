@@ -4,13 +4,12 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import com.wifiplayer.bean.PcFile;
+import com.wifiplayer.main.Main_;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class ReadDirectoryFile {
 //	ArrayList<HashMap<String,Object>> lstPaths = new ArrayList<HashMap<String,Object>>();
@@ -21,6 +20,7 @@ public class ReadDirectoryFile {
 	 */
 	@SuppressWarnings("unused")
 	public static JSONArray listFile(String path){
+
 		ReadDirectoryFile rdf = new ReadDirectoryFile();
 		List<PcFile> list = new ArrayList<PcFile>();
 		List<PcFile> dirs = new ArrayList<PcFile>();
@@ -40,15 +40,15 @@ public class ReadDirectoryFile {
 					pf.setName(f.getName());
 					pf.setPath(f.getAbsolutePath());
 					pf.setCreateDate(getFileModifyTime(f));
-					pf.setSys(false);
+					pf.setSys("false");
 					if(f.isDirectory()){//设置是否为文件夹
 						pf.setSize("");
-						pf.setDir(true);
+						pf.setDir("true");
 						dirs.add(pf);
 					}else{
 //						pf.setSize((f.length() /1024)+ "KB");
 						pf.setSize(new Tools().js(f.length()));
-						pf.setDir(false);
+						pf.setDir("false");
 						files.add(pf);
 					}
 					
@@ -56,9 +56,35 @@ public class ReadDirectoryFile {
 				}
 			}
 		}
+//		try {
+//			if (Main_.osName.equals("Mac OS X") || Main_.osName.equals("android")) {
+				
+//				if (path.equals(Main_.separator)) {
+//					path = Main_.separator;
+//				} else {
+//					path = path.substring(0, path.lastIndexOf(Main_.separator));
+//					if (path.length() == 0) {
+//						path = Main_.separator;
+//					}
+//				}
+//			} else {
+//				if (path.length() != 1 || path.length() != 2 || path.length() != 3) {
+//					path = path.substring(0, path.lastIndexOf(Main_.separator));
+//				}
+//			}
+//			
+//			
+//		} catch (Exception e) {
+//			
+//		}
+		System.out.println("上一级目录:" + path);
 		PcFile pf = new PcFile();
 		pf.setName("\\上一页...");
-		
+		pf.setDir("true");
+		pf.setPath(path);
+		pf.setSize("");
+		pf.setSys("false");
+		pf.setCreateDate("");
 		list.add(pf);
 		/*将文件排序*/
 		for(int i=0; i<dirs.size(); i++){
@@ -96,7 +122,7 @@ public class ReadDirectoryFile {
 			pf.setName(roots[i].toString());
 			String str = (new Tools().js(roots[i].getFreeSpace()));
 			pf.setSize(str + "可用，共" + new Tools().js(roots[i].getTotalSpace()));
-			pf.setSys(true);
+			pf.setSys("true");
 			list.add(pf);
 		}
 		JSONArray jsonArray = JSONArray.fromObject(list);

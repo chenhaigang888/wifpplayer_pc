@@ -56,23 +56,26 @@ public class ReceiveThread implements Runnable {
 				isReceive = false;
 				break;
 			}
-			System.out.print("[");
-			for (int i=0; i<headArray.length; i++) {
-				System.out.print(headArray[i] + ",");
-			}
+//			System.out.print("[");
+//			for (int i=0; i<headArray.length; i++) {
+//				System.out.print(headArray[i] + ",");
+//			}
+//			System.out.print("]");
 			
 			Head head = Head.resolveHead(headArray);
 			System.out.println("当前操作cmd:" + head.getCmd());
 			System.out.println("bodyLenth:" + head.getPackBodyLenth());
 			byte[] bodyArray = new byte[head.getPackBodyLenth()];
 			len = readData(s, 0, bodyArray);
+			
+//			System.out.println("读取的包的内容：" + new String(bodyArray));
 			if (len == -1) {
 				isReceive = false;
 				break;
 			}
 			switch (head.getCmd()) {
 			case Head.CONN_SERVER:// 客户端连接服务器
-				connServer();
+				connServer(new String(bodyArray));
 				break;
 			case Head.OPEN_DIR:
 				openDir(new String(bodyArray), Head.OPEN_DIR_REPLY);
@@ -106,8 +109,9 @@ public class ReceiveThread implements Runnable {
 				try {
 					File uploadFile = new File(new String(bodyArray));//需要上传的文件
 					long upLoadFileLenth = uploadFile.length();//需要上传的长度
-					
-					byte[] connServerArray = (upLoadFileLenth + "").getBytes();
+					System.out.println("上传文件d长度：" + upLoadFileLenth);
+					String str = Long.toString(new Long(upLoadFileLenth));
+					byte[] connServerArray = (str).getBytes();
 					Head head = new Head(Head.COPY_FILE_2_PHONE_REPLY, connServerArray.length, 0, 0);
 					ConnServerReplyBody csrb = new ConnServerReplyBody(connServerArray);
 					Packages p = new Packages(head, csrb);
@@ -229,12 +233,15 @@ public class ReceiveThread implements Runnable {
 		InputStream is = null;
 		try {
 			is = s.getInputStream();
+			System.out.println("--------1------");
 			len = is.read(array, readPosition, array.length - readPosition);
+			System.out.println("--------2------");
 			if (len == -1) {
 				close(s, is);
 				return len;
 			}
 			if ((len + readPosition) < array.length) {
+				System.out.println("--------3------");
 				readData(s, len + readPosition, array);
 			}
 		} catch (IOException e) {
@@ -267,6 +274,7 @@ public class ReceiveThread implements Runnable {
 	 * 获取文件夹
 	 */
 	private void openDir(String path, int cmd) {
+		System.out.println("path:" + path);
 		try {
 			String str = ReadDirectoryFile.listFile(path).toString();
 			System.out.println("str:" + str);
@@ -276,6 +284,7 @@ public class ReceiveThread implements Runnable {
 			Packages p = new Packages(head, csrb);
 			new SendThread(s, p.getPackage()).start();
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("没有找到相关内容");
 		}
 
@@ -284,7 +293,7 @@ public class ReceiveThread implements Runnable {
 	/**
 	 * 客户端连接服务器
 	 */
-	private void connServer() {
+	private void connServer(String msg) {
 		String str = ReadDirectoryFile.systemRoots().toString();
 		System.out.println("根目录：" + str);
 		byte[] connServerArray = str.getBytes();
